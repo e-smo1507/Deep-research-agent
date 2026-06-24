@@ -1,0 +1,4 @@
+virtual env name is research-agent
+.venv\Scripts\activate
+
+
