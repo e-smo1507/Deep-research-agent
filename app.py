@@ -292,6 +292,14 @@ hr { border-color: #1e1c2e !important; }
 """, unsafe_allow_html=True)
 
 
+# ── Quota protection: cached pipeline + per-session run cap ────────────────────
+MAX_RUNS_PER_SESSION = 3  # tune this to whatever your free-tier quota can handle
+
+@st.cache_data(ttl=86400, show_spinner=False)  # same topic reused for 24h = no extra API cost
+def cached_pipeline(topic: str) -> dict:
+    return run_research_pipeline(topic)
+
+
 # ── Session state init ─────────────────────────────────────────────────────────
 if "results" not in st.session_state:
     st.session_state.results = None
@@ -299,6 +307,8 @@ if "running" not in st.session_state:
     st.session_state.running = False
 if "current_step" not in st.session_state:
     st.session_state.current_step = -1
+if "run_count" not in st.session_state:
+    st.session_state.run_count = 0
 
 
 # ── Helper: step pills ─────────────────────────────────────────────────────────
@@ -349,13 +359,23 @@ with col_main:
         label_visibility="visible",
     )
     run_btn = st.button("Run Research Pipeline →", use_container_width=True)
+    st.caption(
+        f"Demo runs left this session: {max(0, MAX_RUNS_PER_SESSION - st.session_state.run_count)} "
+        f"/ {MAX_RUNS_PER_SESSION} · repeated topics are cached and don't count against your quota."
+    )
 
 
 # ── Run ────────────────────────────────────────────────────────────────────────
 if run_btn:
     if not topic.strip():
         st.warning("Please enter a research topic first.")
+    elif st.session_state.run_count >= MAX_RUNS_PER_SESSION:
+        st.warning(
+            f"Demo limit reached ({MAX_RUNS_PER_SESSION} runs per session) to keep this "
+            "available for everyone. Refresh the page to reset, or try again shortly."
+        )
     else:
+        st.session_state.run_count += 1
         st.session_state.results = None
         st.session_state.running = True
 
@@ -399,8 +419,8 @@ if run_btn:
                     progress_bar.progress(STEPS[idx][1])
                     break  # only show first step before actual run
 
-                # Run the full pipeline (blocking)
-                state = run_research_pipeline(topic.strip())
+                # Run the full pipeline (blocking) — cached per topic for 24h
+                state = cached_pipeline(topic.strip())
                 st.session_state.results = state
 
                 # Done

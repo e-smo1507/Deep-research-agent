@@ -1,7 +1,7 @@
 import time
 from dotenv import load_dotenv
 from langgraph.prebuilt import create_react_agent
-from langchain_mistralai import ChatMistralAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
@@ -10,13 +10,13 @@ from tools import web_search, scrape_url
 load_dotenv()
 
 # =========================
-# LLM Setup (Mistral)
+# LLM Setup (Groq — free tier, fast, generous limits)
 # =========================
 
-llm = ChatMistralAI(
-    model="mistral-large-latest",
+llm = ChatGroq(
+    model="llama-3.3-70b-versatile",
     temperature=0,
-    max_retries=6,          # built-in retry on the HTTP client
+    max_retries=3,
 )
 
 # =========================
@@ -32,8 +32,8 @@ def _is_rate_limit(exc: BaseException) -> bool:
 
 @retry(
     retry=retry_if_exception_type(RateLimitError),
-    wait=wait_exponential(multiplier=2, min=5, max=60),  # 5s → 10s → 20s → 40s → 60s
-    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=5, max=30),  # 5s -> 10s -> 20s -> 30s
+    stop=stop_after_attempt(3),  # fail faster instead of hanging for minutes
     reraise=True,
 )
 def safe_invoke(agent_or_chain, payload: dict):
