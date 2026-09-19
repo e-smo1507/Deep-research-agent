@@ -12,7 +12,8 @@ from app.models.studio import ResearchMedia
 
 router = APIRouter(prefix="/media", tags=["media"])
 
-UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads"))
+is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
+UPLOAD_DIR = "/tmp/uploads" if is_vercel else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads"))
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload/{session_id}")

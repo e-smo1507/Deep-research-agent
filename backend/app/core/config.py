@@ -4,10 +4,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Check if running on Vercel (read-only filesystem, /tmp is writable)
+is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
+default_db_url = "sqlite+aiosqlite:////tmp/research.db" if is_vercel else "sqlite+aiosqlite:///./research.db"
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Deep Research Agent Platform"
     API_V1_STR: str = "/api"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./research.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", default_db_url)
     
     # API Keys
     TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "")
