@@ -1,5 +1,5 @@
 fastapi>=0.110.0
-uvicorn[standard]>=0.28.0
+uvicorn>=0.28.0
 sse-starlette>=2.0.0
 pydantic>=2.6.0
 pydantic-settings>=2.2.0
@@ -18,3 +18,4 @@ requests>=2.31.0
 tenacity>=8.2.3
 python-dotenv>=1.0.1
 reportlab>=4.1.0
+mangum>=0.17.0

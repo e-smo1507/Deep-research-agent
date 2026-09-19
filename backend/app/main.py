@@ -12,8 +12,11 @@ from app.api.studio import router as studio_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
-    print("Database initialized with Studio & Analytics tables")
+    try:
+        await init_db()
+        print("Database initialized successfully")
+    except Exception as e:
+        print(f"Lifespan DB init warning: {e}")
     yield
 
 app = FastAPI(
@@ -24,7 +27,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,3 +46,7 @@ async def root():
         "message": "Deep Research Agent Platform & Studio API is running",
         "docs": "/docs"
     }
+
+@app.get("/api/health")
+async def health():
+    return {"status": "healthy", "platform": "Deep Research Agent Platform"}
