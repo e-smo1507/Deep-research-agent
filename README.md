@@ -1,195 +1,109 @@
-# 🔬 Multi-Agent Research Pipeline
+# 🔬 Deep Research Agent — Full-Stack AI Research Platform
 
-> A fully autonomous AI research system powered by **LangGraph**, **Mistral AI**, **Tavily**, and **BeautifulSoup** — with a sleek **Streamlit** UI.
-
----
-
-## 🧠 How It Works
-
-The pipeline chains **4 specialized AI agents** in sequence, each with a single responsibility:
-
-```
-You give a Research Topic
-         │
-         ▼
-┌─────────────────────────┐        ┌──────────────────────────────┐
-│   Agent 1: Search Agent  │───────▶│  Tool 1: Tavily API          │
-│   (create_react_agent)   │◀───────│  Live web search results     │
-└─────────────────────────┘        └──────────────────────────────┘
-         │
-         │  state['search_results'] saved
-         ▼
-┌─────────────────────────┐        ┌──────────────────────────────┐
-│   Agent 2: Reader Agent  │───────▶│  Tool 2: BeautifulSoup       │
-│   (create_react_agent)   │◀───────│  Scrapes & cleans page text  │
-└─────────────────────────┘        └──────────────────────────────┘
-         │
-         │  state['scraped_content'] saved
-         ▼
-┌─────────────────────────┐
-│   Chain 3: Writer Chain  │  Drafts a structured research report
-│   (LCEL prompt | llm)   │
-└─────────────────────────┘
-         │
-         │  state['report'] saved
-         ▼
-┌─────────────────────────┐
-│   Chain 4: Critic Chain  │  Scores and critiques the report
-│   (LCEL prompt | llm)   │
-└─────────────────────────┘
-         │
-         ▼
-    ✅ Final Output
-```
+> An enterprise-grade, autonomous **Deep Research Platform** powered by **FastAPI**, **React (Vite + Tailwind CSS)**, **LangGraph**, **Groq / Mistral / OpenAI**, **Tavily**, and **ReportLab**.
 
 ---
 
-## 🗂️ Project Structure
+## 🌟 Key Features
+
+- ⚡ **Multi-Agent Research Pipeline**:
+  - 🔍 **Search Agent**: Intelligent query routing & live web index retrieval with Tavily.
+  - 🕷️ **Reader Agent**: Automatic page scraping, HTML sanitization, and structured extraction.
+  - ✍️ **Writer Chain**: Rigorous executive synthesis with findings, future outlook, and citations.
+  - 🧐 **Critic Review Chain**: Automated peer-review scoring ($X/10$), identifying strengths and actionable improvements.
+- 📡 **Real-Time SSE Streaming**: Live step-by-step visibility into agent reasoning, active searches, and scraping progress.
+- 💾 **Persistent Session Library**: SQLite / PostgreSQL database to save, search, filter, and revisit past research reports.
+- 💬 **Follow-Up Interactive Q&A ("Chat with this Report")**: Conversational sidebar grounded strictly in the report's gathered sources.
+- 📄 **Multi-Format Export Engine**: One-click download as publication-ready **Styled PDF**, clean **Markdown (`.md`)**, or clipboard copy.
+- 🎛️ **Multi-Model Provider Support**: Instant toggle between Groq (Llama 3.3 70B), Mistral AI, and OpenAI (GPT-4o).
+
+---
+
+## 🏗️ Architecture
 
 ```
-research-agent/
-│
-├── app.py              # Streamlit UI
-├── pipeline.py         # Supervisor — orchestrates all 4 agents/chains
-├── agents.py           # Agent & chain definitions + rate-limit retry logic
-├── tools.py            # web_search (Tavily) + scrape_url (BeautifulSoup)
-├── requirements.txt    # All dependencies
-└── .env                # API keys (not committed)
+┌────────────────────────────────────────────────────────┐
+│               Frontend: React + Vite + Tailwind        │
+│  - Research Dashboard & Live Timeline Visualizer       │
+│  - Rich Markdown Report Viewer with Critic Scorecard   │
+│  - Research History Sidebar (Persistent Sessions)      │
+│  - Follow-up Q&A Chat with Report Context              │
+│  - One-Click PDF & Markdown Exporters                  │
+└───────────────────────────┬────────────────────────────┘
+                            │ REST API + SSE Stream
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│               Backend: FastAPI (Python)                │
+│  - /api/research/stream (Real-Time SSE Event Stream)   │
+│  - /api/history (Session CRUD & Search)                │
+│  - /api/chat (Follow-up RAG conversation)              │
+│  - /api/export (Formatted PDF & Markdown Generator)    │
+│  - SQLite Database with SQLAlchemy Async ORM           │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│            Multi-Agent LangGraph Engine                │
+│  1. Search Agent (Tavily API)                          │
+│  2. Reader Agent (BeautifulSoup4 Scraper & Parser)     │
+│  3. Writer Chain (Structured Research Synthesis)       │
+│  4. Critic Chain (Scorecard & Evaluation)              │
+│  5. Follow-up Q&A Chain (Grounded Context Answering)   │
+└────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ⚙️ Tech Stack
+## 🚀 Quick Start
 
-| Layer | Technology |
-|---|---|
-| **LLM** | Mistral AI (`mistral-large-latest`) |
-| **Agent Framework** | LangGraph `create_react_agent` |
-| **Chain Syntax** | LangChain LCEL (`prompt \| llm \| StrOutputParser`) |
-| **Web Search** | Tavily API |
-| **Web Scraping** | BeautifulSoup 4 + Requests |
-| **UI** | Streamlit |
-| **Retry Logic** | Tenacity (exponential back-off) |
-| **Env Management** | python-dotenv |
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/your-username/research-agent.git
-cd research-agent
-```
-
-### 2. Create a virtual environment
-
-```bash
-python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS / Linux
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Set up your `.env` file
-
+### 1. Configure Environment Variables
+Copy `.env.example` to `.env` in the root and fill in your API keys:
 ```env
-MISTRAL_API_KEY=your_mistral_api_key
-TAVILY_API_KEY=your_tavily_api_key
+GROQ_API_KEY=gsk_your_groq_key
+TAVILY_API_KEY=tvly_your_tavily_key
 ```
 
-> Get your keys from:
-> - Mistral: https://console.mistral.ai/
-> - Tavily: https://app.tavily.com/
+### 2. Launch the Application
 
-### 5. Run the Streamlit UI
-
+#### Option A: One-Click Start (Windows)
+Double-click `start.bat` or run:
 ```bash
-streamlit run app.py
+start.bat
 ```
 
-### 5b. Or run in terminal only
+#### Option B: Manual Start
 
+**Backend:**
 ```bash
-python pipeline.py
+pip install -r backend/requirements.txt
+python backend/run.py
 ```
+*Backend runs on `http://127.0.0.1:8000` (API Docs at `/docs`).*
 
----
-
-## 🧩 Agent Breakdown
-
-### 🔍 Search Agent — `build_search_agent()`
-Uses **Tavily API** to fetch live, reliable web search results for the given topic. Results are stored in `state['search_results']`.
-
-### 🕷️ Reader Agent — `build_reader_agent()`
-Picks the most relevant URL from the search results and uses **BeautifulSoup** to scrape and extract clean readable text. Stored in `state['scraped_content']`.
-
-### ✍️ Writer Chain — `writer_chain`
-An LCEL chain (`prompt | llm | StrOutputParser`) that synthesises the search results and scraped content into a structured report with Introduction, Key Findings, Conclusion, and Sources.
-
-### 🧐 Critic Chain — `critic_chain`
-Reviews the generated report and returns a structured critique: a score out of 10, strengths, areas to improve, and a one-line verdict.
-
----
-
-## 🛡️ Rate Limit Handling
-
-All agent and chain calls are wrapped in a `safe_invoke()` function using **Tenacity**:
-
-- Detects HTTP 429 / `rate_limited` errors automatically
-- Retries up to **5 times** with exponential back-off: `5s → 10s → 20s → 40s → 60s`
-- The Mistral client also has `max_retries=6` at the HTTP level
-
----
-
-## 📸 UI Preview
-
-The Streamlit UI (`app.py`) features:
-
-- A **4-step pipeline indicator** (Search → Scrape → Write → Critique) that updates live
-- Result cards with **colour-coded accents** per agent
-- Raw search and scraped content in **collapsed expanders**
-- A **Download as Markdown** button for the final report
-
----
-
-## 📋 Requirements
-
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
 ```
-langchain
-langchain-community
-langchain-mistralai
-langchain-core
-langgraph
-langsmith
-mistralai
-tavily-python
-beautifulsoup4
-requests
-streamlit
-tenacity
-python-dotenv
-```
+*Frontend runs on `http://localhost:5173`.*
+
+---
+
+## 📡 API Endpoints Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/research/create` | Create a new research session |
+| `GET` | `/api/research/{id}/stream` | SSE real-time agent execution stream |
+| `GET` | `/api/research/{id}` | Retrieve report, scores, and logs |
+| `GET` | `/api/history` | List and search research history |
+| `DELETE` | `/api/history/{id}` | Delete a specific session |
+| `POST` | `/api/chat/{id}` | Ask follow-up questions about a report |
+| `GET` | `/api/export/{id}/pdf` | Download formatted PDF report |
+| `GET` | `/api/export/{id}/markdown` | Download Markdown report file |
 
 ---
 
 ## 📄 License
-
-MIT — free to use, modify, and distribute.
-
----
-
-<p align="center">Built with LangGraph · Mistral AI · Tavily · BeautifulSoup · Streamlit</p>
-
- Project link
- https://huggingface.co/spaces/Esoli/AI_RESEARCH
+MIT — Free to use, modify, and distribute.
