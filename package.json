@@ -3,6 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build": "npm --prefix frontend install --package-lock=false && npm --prefix frontend run build"
+    "build": "cd frontend && npm install && node node_modules/vite/bin/vite.js build"
   }
 }
